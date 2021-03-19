@@ -1,6 +1,7 @@
 import http from 'http'
 import httpProxy from 'http-proxy'
 import { handleBuffer } from './handleBuffer';
+import {Configs} from './config'
 
 //
 // Create a proxy server with custom application logic
@@ -125,5 +126,5 @@ proxy.on('error', (err) => {
   }
 })
 
-console.log("listening on port 5053")
-server.listen(5053);
+console.log("listening on port " + Configs.port)
+server.listen(Configs.port);
