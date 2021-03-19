@@ -91,16 +91,15 @@ var server = http.createServer(function(oreq, res) {
   // const host = 
 
   
-  console.log('incoming req', oreq.url)
-  const x = oreq.socket
-  console.log(oreq.headers.host, oreq.headers.referer)
+  console.log('incoming req', oreq.url, oreq.headers.host)
+  const u = oreq.headers.host
 
   // Object.keys(req.headers)
   // res.write('123')
   // res.end()
   // oreq.url = replaceHost(oreq.url)
 
-  const host = new URL(replaceHost(oreq.url)).origin
+  const host = new URL(replaceHost(u)).origin
   console.log(host)
   proxy.web(oreq, res, {
     target: host,
