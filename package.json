@@ -1,0 +1,30 @@
+{
+  "name": "env-proxy",
+  "version": "1.0.0",
+  "description": "provides a proxy service for tce test environments",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "proxy",
+    "tce",
+    "node"
+  ],
+  "author": "arnoldmeng",
+  "license": "ISC",
+  "dependencies": {
+    "harmon": "^1.4.4",
+    "http-proxy": "^1.18.1",
+    "koa": "^2.13.1",
+    "koa-body": "^4.2.0",
+    "request": "^2.88.2",
+    "zlib": "^1.0.5"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.5",
+    "@types/koa": "^2.13.1",
+    "@types/node": "^14.14.35",
+    "@types/request": "^2.48.5"
+  }
+}
