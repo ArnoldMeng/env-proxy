@@ -24,6 +24,7 @@ const m17 = 'yf-m17.tcecqpoc.fsphere.cn'
 const devUrl = 'dev.tce.com'
 const tgtUrl = m16
 
+// 替换开发域名与实际环境域名
 function replaceHost(str: string, tgtToDev = false) {
   const src: string = !tgtToDev ? devUrl : tgtUrl
   const tgt = tgtToDev ? devUrl : tgtUrl
@@ -31,6 +32,7 @@ function replaceHost(str: string, tgtToDev = false) {
   return str.replace(srcReg, tgt)
 }
 
+// 拦截发向环境的请求，将header和path替换为环境域名
 proxy.on('proxyReq', function(proxyReq, oreq, res, options) {
   console.log(proxyReq.path)
   proxyReq.path = replaceHost(proxyReq.path)
@@ -42,18 +44,17 @@ proxy.on('proxyReq', function(proxyReq, oreq, res, options) {
   }
 });
 
+// 获取、转发实际请求结果
 proxy.on('proxyRes', function (proxyRes, oreq, res) {
   let body: any = [];
 
   proxyRes.on('data', function (chunk) {
-    // console.log('data', chunk.length, Buffer.isEncoding('utf-8'))
-    // const decode = Buffer.from(, 'utf-8')
       body.push(chunk);
   });
   proxyRes.on('end', function () {
     
+    // 将header中的环境域名替换为开发域名
     const headers = proxyRes.headers
-    // console.log('headers', oreq.url,proxyRes.headers, res.statusCode, headers)
     for (let key in headers) {
       const v = headers[key]
       res.setHeader(key, typeof v === 'string'
@@ -62,20 +63,25 @@ proxy.on('proxyRes', function (proxyRes, oreq, res) {
         ? v
         : v.map(s=>replaceHost(s, true)))
     }
+
+    // 设置代理请求的状态
     res.statusCode = proxyRes.statusCode
     res.statusMessage = proxyRes.statusMessage
+
+    // 将body中的环境域名替换为开发域名
     body = Buffer.concat(body)
     const byContentType = 
       /(text)|(html)|(json)|(script)|(xml)/i.test(proxyRes.headers['content-type'] || '')
       && !/(image)/i.test(proxyRes.headers['content-type'] || '')
     const byUrl = /\.((js)|(html))/.test(oreq.url)
     if (byContentType || byUrl) {
+      // 解析html/json/script中的内容，替换内容
       body = handleBuffer(body, proxyRes.headers['content-encoding']).toString();
-      // console.log("res from proxied server:", body);
       body = replaceHost(body, true)
       body = Buffer.from(body, 'utf-8')
       res.setHeader('content-encoding', 'identity') // 不压缩
     }
+    // 调整部分返回头
     res.removeHeader('transfer-encoding')
     res.removeHeader('content-length')
     res.setHeader('content-length', body.length)
@@ -85,26 +91,16 @@ proxy.on('proxyRes', function (proxyRes, oreq, res) {
 });
 
 var server = http.createServer(function(oreq, res) {
-  // You can define here your custom logic to handle the request
-  // and then proxy the request.
-  // const cookie = req.headers.cookie
-  // const host = 
 
-  
   console.log('incoming req', oreq.url, oreq.headers.host)
-  const u = oreq.headers.host
 
-  // Object.keys(req.headers)
-  // res.write('123')
-  // res.end()
-  // oreq.url = replaceHost(oreq.url)
+  const target = 'http://'+ replaceHost(oreq.headers.host)
 
-  const host = new URL(replaceHost(u)).origin
-  console.log(host)
   proxy.web(oreq, res, {
-    target: host,
+    target: 'http://127.0.0.1:8899',
     selfHandleResponse : true,
-    ws: true
+    ws: true,
+    toProxy: true
   });
 });
 
